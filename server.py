@@ -57,12 +57,8 @@ async def update_server_structure(sitemap: dict, sitemap_file: str):
             if channel is None:
                 channel = await server.create_text_channel(channel_data["name"], category=category)
                 webhook = await channel.create_webhook(name=WEBHOOK_NAME)
-                updated_channels.append({
-                    "name": channel.name, 
-                    "original_id": channel_data["id"],  # Guardar ID original
-                    "cloned_id": channel.id,            # Guardar ID clonado
-                    "webhook": webhook.url
-                })
+                updated_channels.append({"name": channel.name, "id": channel.id, "webhook": webhook.url})
+                logging.info(f"Channel created: {channel_data['name']} in category {cat_data['name']}")
                 await asyncio.sleep(INTERVAL)
             else:
                 webhook = None
@@ -156,9 +152,9 @@ async def websocket_handler(websocket, path):
             if old_sitemap is not None:
                 removed_channels, title_changes = compare_sitemaps(old_sitemap, updated_sitemap)
                 if removed_channels:
-                    logging.info("Removed channels: %s", removed_channels)
+                    logging.info("Removed channels:", removed_channels)
                 if title_changes:
-                    logging.info("Title changes: %s", title_changes)
+                    logging.info("Title changes:", title_changes)
                 if not removed_channels and not title_changes:
                     logging.info("Nothing changed")
 
