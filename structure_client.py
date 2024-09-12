@@ -30,13 +30,14 @@ async def get_server_structure():
         for channel in category.channels:
             if isinstance(channel, discord.TextChannel):
                 # Guardar tanto el nombre como el ID original del canal
-                cat_data["channels"].append({"name": channel.name, "id": channel.id})
+                cat_data["channels"].append({"name": channel.name, "original_id": channel.id,"cloned_id": None })
+                logging.info(f"Channel: {channel.name}, ID: {channel.id} (in category {category.name})")
         structure["categories"].append(cat_data)
     
     # Canales sin categoría
     for channel in server.text_channels:
         if channel.category is None:
-            structure["standalone_channels"].append({"name": channel.name, "id": channel.id})
+            structure["standalone_channels"].append({"name": channel.name, "original_id": channel.id,"cloned_id": None})
     
     logging.info("Successfully retrieved server structure.")
     return structure
@@ -50,7 +51,7 @@ async def send_structure_to_websocket(structure):
     except Exception as e:
         logging.error(f"Error sending structure to websocket: {e}")
         
-@tasks.loop(hours=1)
+@tasks.loop(minutes=10)
 async def periodic_update():
     structure = await get_server_structure()
     if structure:
